@@ -120,7 +120,7 @@ namespace serverCreator
             byte[] padding2 = { 0xaa, 0xbb }, unused = { 0x00, 0x00}, padding3 = { 0xaa, 0xbb, 0xcc};
 			packet = GamePacketFactory.Create(CtosMessage.CreateGame);
 			//hostinfo
-            packet.Write(banlist_hash);
+			packet.Write(banlist_hash);
             packet.Write(allowed);
 			//packet.Write(mode);
 			//packet.Write(duelRule);
