@@ -20,7 +20,7 @@ namespace serverCreator
         public static YGOClient Connection { get; set; }
 		public static uint banlistHash { get; set; } = 0;
 		public static string banlistPath { get; set; } = "";
-		public static string banlistName { get; set; } = "";
+		public static string banlistName { get; set; } = "2021.07 TCG";
 		public static byte allowed { get; set; } = 3;
 		public static bool dontCheckDeck { get; set; } = false;
 		public static bool dontShuffleDeck { get; set; } = false;
