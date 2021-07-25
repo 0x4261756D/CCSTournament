@@ -11,35 +11,36 @@ using YGOSharp.Network.Enums;
 using YGOSharp.Network.Utils;
 using System.Net;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace serverCreator
 {
     class MainClass
     {
-        public static YGOClient Client { get; set; }
-        public static uint  banlist_hash = 0,
-                            startingLP = 8000,
-                            handshake_magic = 4043399681;
-        public static byte allowed = (byte)DuelAllowedCards.ANY,
-                            mode = 0,
-                            duelRule = 0,
-                            dontCheckDeck = 0,
-                            dontShuffleDeck = 0,
-                            startingDrawCount = 5,
-                            drawCountPerTurn = 1; 
-        public static ushort timeLimitInSeconds = 300;
-        public static ulong duelFlags = 190464,
-							extraRules = 0;
-        public static int 	team0Count = 1,
-							team1Count = 1,
-							bestOf = 3,
-							forb = 0,
-							version = 39 | 1 << 8 | 9 << 16,
-							host_port = 7911;
-        public static string 	username = "test",
-								notes = "Hello, World!",
-								host_info = "This is a hostinfo",
-								host_address = "85.214.233.223";
+        public static YGOClient Connection { get; set; }
+		public static uint banlistHash { get; set; } = 0;
+		public static string banlistPath { get; set; } = "";
+		public static string banlistName { get; set; } = "";
+		public static byte allowed { get; set; } = 3;
+		public static bool dontCheckDeck { get; set; } = false;
+		public static bool dontShuffleDeck { get; set; } = false;
+		public static uint startingLP { get; set; } = 8000;
+		public static byte startingDrawCount { get; set; } = 5;
+		public static byte drawCountPerTurn { get; set; } = 1;
+		public static ushort timeLimitInSeconds { get; set; } = 300;
+		public static ulong duelFlags { get; set; } = 190464;
+		public static int t0Count { get; set; } = 1;
+		public static int t1Count { get; set; } = 1;
+		public static int bestOf { get; set; } = 1;
+		public static int forb { get; set; } = 0;
+		public static ushort extraRules { get; set; } = 0;
+		public static string notes { get; set; } = "";
+		public static int Version { get; set; } = 39 | 1 << 8 | 9 << 16;
+
+		public static string host_address = "85.214.233.223";
+		public static int host_port = 7911;
+		public static string Username { get; set; } = "Test";
+		public static string HostInfo { get; set; } = "Hostinfo";
 
 		const int MAX_NOTES_LENGTH = 200;
 
@@ -54,9 +55,12 @@ namespace serverCreator
 
         public static void Main(string[] args)
         {
-            Client = new YGOClient();
-            Client.Connected += OnConnected;
-			Client.PacketReceived += OnPacketReceived;
+			if (args.Length > 0)
+				banlistPath = args[0];
+			banlistHash = Banlist.ParseForBanlists(banlistPath, banlistName);
+            Connection = new YGOClient();
+            Connection.Connected += OnConnected;
+			Connection.PacketReceived += OnPacketReceived;
 			IPAddress address;
 			try
 			{
@@ -67,11 +71,11 @@ namespace serverCreator
 				IPHostEntry entry = Dns.GetHostEntry(host_address);
 				address = entry.AddressList.FirstOrDefault(findIPv4 => findIPv4.AddressFamily == AddressFamily.InterNetwork);
 			}
-			Client.Connect(address, host_port);
-			while (Client.IsConnected)
+			Connection.Connect(address, host_port);
+			while (Connection.IsConnected)
 			{
-				Client.Update();
-				Console.WriteLine(Client.IsConnected);
+				Connection.Update();
+				Console.WriteLine(Connection.IsConnected);
 				Thread.Sleep(30);
 			}
 		}
@@ -105,65 +109,68 @@ namespace serverCreator
 					break;
 				case 5:
 					int expected_version = packet.ReadInt32();
-					Console.WriteLine($"Expected {expected_version}, got {version}");
+					Console.WriteLine($"Expected {expected_version}, got {Version}");
 					break;
 			}
-			Client.Close();
+			Connection.Close();
 		}
 
 		private static void OnConnected()
         {
-			Console.WriteLine("In OnConnected");
 			BinaryWriter packet = GamePacketFactory.Create(CtosMessage.PlayerInfo);
-            packet.WriteUnicode(username, 20);
-			Client.Send(packet);
-            byte[] padding2 = { 0xaa, 0xbb }, unused = { 0x00, 0x00}, padding3 = { 0xaa, 0xbb, 0xcc};
+			packet.WriteUnicode(Username, 20);
+			Connection.Send(packet);
+			byte[] padding2 = { 0xAA, 0xBB };
+			byte[] unused = { 0x00, 0x00 };
+			byte[] padding3 = { 0xAA, 0xBB, 0xCC };
 			packet = GamePacketFactory.Create(CtosMessage.CreateGame);
-			//hostinfo
-			packet.Write(banlist_hash);
-            packet.Write(allowed);
-			//packet.Write(mode);
-			//packet.Write(duelRule);
-			packet.Write(unused);
-            packet.Write(dontCheckDeck);
-            packet.Write(dontShuffleDeck);
-            packet.Write(padding3);
-            packet.Write(startingLP);
-            packet.Write(startingDrawCount);
-            packet.Write(drawCountPerTurn);
-            packet.Write(timeLimitInSeconds);
-            packet.Write((uint)((duelFlags) >> 32) & 0xFFFFFFFF);
-            packet.Write(handshake_magic);
-            packet.Write(version);
-            packet.Write(team0Count);
-            packet.Write(team1Count);
-            packet.Write(bestOf);
-            packet.Write((uint)((duelFlags) & 0xFFFFFFFF));
-            packet.Write(forb);
-            packet.Write(extraRules);
-            packet.Write(padding2);
-            packet.WriteUnicode("UNUSED", 20);
-			packet.WriteUnicode(host_info, 20);
+			// hostInfo
+			packet.Write(banlistHash);
+			packet.Write(allowed);
+			packet.Write(unused); // mode & duelRule
+			packet.Write((byte)(dontCheckDeck ? 1 : 0));
+			packet.Write((byte)(dontShuffleDeck ? 1 : 0));
+			packet.Write(padding3);
+			packet.Write(startingLP);
+			packet.Write(startingDrawCount);
+			packet.Write(drawCountPerTurn);
+			packet.Write(timeLimitInSeconds);
+			packet.Write((uint)((duelFlags >> 32) & 0xFFFFFFFF));
+			packet.Write((uint)4043399681); // handshake
+			packet.Write(Version); // version
+			packet.Write(t0Count);
+			packet.Write(t1Count);
+			packet.Write(bestOf);
+			packet.Write((uint)(duelFlags & 0xFFFFFFFF));
+			packet.Write(forb);
+			packet.Write(extraRules);
+			packet.Write(padding2);
+			// name
+			packet.WriteUnicode("", 20); // UNUSED
+										 // pass
+			packet.WriteUnicode(HostInfo, 20);
+			// notes
 			try
 			{
+				// Write notes in UTF8 format making sure to always write exactly
+				// MAX_NOTES_LENGTH bytes.
 				byte[] content = Encoding.UTF8.GetBytes(notes + "\0");
 				if (content.Length > MAX_NOTES_LENGTH)
-					throw new Exception("Message too long");
+					throw new Exception();
 				packet.Write(content);
 				for (int i = MAX_NOTES_LENGTH - content.Length; i > 0; i--)
 					packet.Write((byte)0);
 			}
-			catch(Exception e)
+			catch (Exception)
 			{
-				Console.WriteLine("Warning, unable to encode game notes, sending empyt string instead\n" + e);
-				for(int i = 0; i < (MAX_NOTES_LENGTH / 8); i++)
-				{
-					packet.Write((ulong)0);
-				}
+				Console.WriteLine("Warning: Unable to encode CreateGame.notes, sending empty string instead.");
+				for (int i = 0; i < (MAX_NOTES_LENGTH / 8); i++) packet.Write((ulong)0);
 			}
-			Client.Send(packet);
+			Connection.Send(packet);
+			packet = GamePacketFactory.Create(CtosMessage.HsToObserver);
+			Connection.Send(packet);
 		}
-    }
+	}
 
 	public static class GamePacketFactory
 	{
@@ -172,6 +179,45 @@ namespace serverCreator
 			BinaryWriter writer = new BinaryWriter(new MemoryStream());
 			writer.Write((byte)message);
 			return writer;
+		}
+	}
+
+	public static class Banlist
+	{
+		const uint BANLIST_HASH_MAGIC = 0x7DFCEE6A;
+
+		public static uint Salt(uint hash, uint code, int count)
+		{
+			int HASH_MAGIC_1 = 18, HASH_MAGIC_2 = 14, HASH_MAGIC_3 = 27, HASH_MAGIC_4 = 5;
+			return hash ^ ((code << HASH_MAGIC_1) | (code >> HASH_MAGIC_2)) ^ ((code << (HASH_MAGIC_3 + count)) | (code >> (HASH_MAGIC_4 - count)));
+		}
+
+		public static uint ParseForBanlists(string filename, string banlistName)
+		{
+			uint hash = BANLIST_HASH_MAGIC;
+			if (!File.Exists(filename)) return 0;
+			string[] lines = File.ReadAllLines(filename);
+			bool doAnything = false;
+			foreach(string line in lines)
+			{
+
+				if(line.StartsWith("!", StringComparison.Ordinal))
+				{
+					if (!doAnything)
+						doAnything = line.Contains(banlistName);
+					else
+						return hash;
+				}
+				else if(doAnything && "0123456789".Contains(line[0]))
+				{
+					string[] p = line.Split(' ');
+					uint code = Convert.ToUInt32(p[0]);
+					if (code == 0) throw new Exception("Code can't be 0");
+					int count = Convert.ToInt32(p[1]);
+					hash = Salt(hash, code, count);
+				}
+			}
+			return (hash == BANLIST_HASH_MAGIC) ? 0 : hash;
 		}
 	}
 }
