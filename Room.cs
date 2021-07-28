@@ -32,10 +32,10 @@ namespace serverCreator
 		public string notes { get; set; } = "";
 		public int Version { get; set; } = 39 | 1 << 8 | 9 << 16;
 
-		public string host_address = "85.214.233.223";
+		public string host_address;
 		public int host_port = 7911;
-		public string Username { get; set; } = "Test";
-		public string HostInfo { get; set; } = "Hostinfo";
+		public string Username { get; set; } = "Tournament";
+		public string HostInfo { get; set; } = "";
 
 		const int MAX_NOTES_LENGTH = 200;
 
@@ -48,9 +48,12 @@ namespace serverCreator
 			ANY
 		}
 
-		public Room()
+		public Room(string p1 = "", string p2 = "", string ip = "127.0.0.1", string password = "")
 		{
 			banlistHash = Banlist.ParseForBanlists(banlistPath, banlistName);
+			notes = p1 + " vs. " + p2;
+			host_address = ip;
+			HostInfo = password;
 			Connection = new YGOClient();
 			Connection.Connected += OnConnected;
 			Connection.PacketReceived += OnPacketReceived;
@@ -72,7 +75,6 @@ namespace serverCreator
 			if (Connection.IsConnected)
 			{
 				Connection.Update();
-				Console.WriteLine(Connection.IsConnected);
 			}
 			return Connection.IsConnected;
 		}
