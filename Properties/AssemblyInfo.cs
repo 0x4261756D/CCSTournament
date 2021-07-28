@@ -4,8 +4,8 @@ using System.Runtime.CompilerServices;
 // Information about this assembly is defined by the following attributes. 
 // Change them to the values specific to your project.
 
-[assembly: AssemblyTitle("serverCreator")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("CCSTournament")]
+[assembly: AssemblyDescription("Program to automate some parts of tournament-hosting")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("")]
