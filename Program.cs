@@ -10,7 +10,7 @@ namespace serverCreator
 				Room.banlistPath = args[0];
 			if (args.Length > 1)
 				Room.banlistName = args[1];
-			Console.WriteLine(Room.banlistName + Room.banlistPath);
+
 		}
 	}
 }
