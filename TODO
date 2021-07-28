@@ -1,0 +1,5 @@
+- Add Player registration
+- Experiment with point detection
+- Put room handling in Tournament class (participant list as param)
+	- Add handling for multiple rooms at the same time
+- Implement pairing creation (Merge sort?)
