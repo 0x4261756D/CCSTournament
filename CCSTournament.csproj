@@ -50,6 +50,7 @@
     <Compile Include="YGOSharp.Network\Enums\PlayerType.cs" />
     <Compile Include="YGOSharp.Network\Utils\BinaryExtensions.cs" />
     <Compile Include="Room.cs" />
+    <Compile Include="Tournament.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

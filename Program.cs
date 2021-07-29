@@ -11,12 +11,10 @@ namespace serverCreator
 				Room.banlistPath = args[0];
 			if (args.Length > 1)
 				Room.banlistName = args[1];
-			Room r = new Room();
-			while (r.Process())
-			{
-				Console.WriteLine(r.notes);
-				Thread.Sleep(30);
-			}
+			Tournament t = new Tournament(new string[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O" });
+			Console.WriteLine(t);
+			t.ProcessRound();
+			Console.WriteLine(t);
 		}
 	}
 }
