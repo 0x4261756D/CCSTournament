@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading;
 
-namespace serverCreator
+namespace CCSTournament
 {
 	class MainClass
 	{
+		static int round;
+
 		public static void Main(string[] args)
 		{
 			if (args.Length > 0)

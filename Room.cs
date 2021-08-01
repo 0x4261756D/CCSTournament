@@ -8,7 +8,7 @@ using YGOSharp.Network;
 using YGOSharp.Network.Enums;
 using YGOSharp.Network.Utils;
 
-namespace serverCreator
+namespace CCSTournament
 {
 	public class Room
 	{
