@@ -3,3 +3,4 @@ obj/
 YGOSharp.Network
 .vs/
 *.user
+mono_crash*

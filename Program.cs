@@ -13,10 +13,11 @@ namespace CCSTournament
 				Room.banlistPath = args[0];
 			if (args.Length > 1)
 				Room.banlistName = args[1];
-			Tournament t = new Tournament(new string[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O" });
-			Console.WriteLine(t);
-			t.ProcessRound();
-			Console.WriteLine(t);
+			Tournament t = new Tournament(new string[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O" }, 8);
+			for(int i = 0; i < 7; i++)
+			{
+				t.ProcessRound();
+			}
 		}
 	}
 }
