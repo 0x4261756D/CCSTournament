@@ -13,7 +13,8 @@ namespace CCSTournament
 				Room.banlistPath = args[0];
 			if (args.Length > 1)
 				Room.banlistName = args[1];
-			Tournament t = new Tournament(new string[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O" }, 8);
+			Tournament t = new Tournament(new string[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O" }, 8, "85.214.233.223");
+			Console.WriteLine(t);
 			for(int i = 0; i < 7; i++)
 			{
 				t.ProcessRound();

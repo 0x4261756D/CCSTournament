@@ -9,22 +9,37 @@ namespace CCSTournament
 	{
 		string[] participants;
 
-		Dictionary<int, int> scores;
+		List<Dictionary<int, int>> groups;
 
-		int round, groupSize;
+		int  groupSize;
 
 		List<List<int>> numbers;
+		public string ip;
 
-		public Tournament(string[] participants, int initialGroupSize = 4)
+		public Tournament(string[] participants, int initialGroupSize = 4, string ip = "127.0.0.1")
 		{
 			this.participants = participants;
+			this.ip = ip;
 			groupSize = initialGroupSize;
+			groups = new List<Dictionary<int, int>>();
+			for(int i = 0; i < Math.Ceiling((double)participants.Length / groupSize); i++)
+			{
+				groups.Add(new Dictionary<int, int>());
+				for(int j = 0; j < groupSize; j++)
+				{
+					if (i * groupSize + j == participants.Length)
+						break;
+					groups[i].Add(i * groupSize + j, 0);
+				}
+			}
 			SetupRound();
 		}
 
 		public void ProcessRound()
 		{
 			// Check if the tournament is already done
+			if (groups.Count <= 1)
+				return;
 			// Do the matches
 			Matches();
 			// Sort inside the groups
@@ -57,6 +72,7 @@ namespace CCSTournament
 		void Merge(int i, int j)
 		{
 		}
+
 		//TODO (dummy)
 		void Matches()
 		{
@@ -84,11 +100,36 @@ namespace CCSTournament
 				numbers.RemoveAt(i);
 			}
 			Console.WriteLine(s);
+			List<Room> rooms = new List<Room>();
+			for(int i = 0; i < groups.Count; i++)
+			{
+				for(int j = 0; j < groups[i].Count - 1; j += 2)
+				{
+					rooms.Add(new Room(participants[groups[i].ElementAt(j).Key], participants[groups[i].ElementAt(j + 1).Key], ip));
+				}
+			}
+			while(rooms.Count > 0)
+			{
+				for(int i = 0; i < rooms.Count; i++)
+				{
+					if (!rooms[i].Process()) rooms.RemoveAt(i);
+				}
+			}
 		}
 
 		public override string ToString()
 		{
-			return "";
+			string s = "";
+			foreach(Dictionary<int, int> group in groups)
+			{
+				s += "GROUP starts\n";
+				foreach(KeyValuePair<int, int> player in group)
+				{
+					s += $"{participants[player.Key]}: {player.Value}\n";
+				}
+				s += "GROUP ends\n";
+			}
+			return s;
 		}
 	}
 }
