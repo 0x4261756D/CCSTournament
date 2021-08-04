@@ -113,7 +113,11 @@ namespace CCSTournament
 			{
 				for(int i = 0; i < rooms.Count; i++)
 				{
-					if (!rooms[i].Process()) rooms.RemoveAt(i);
+					if (!rooms[i].Process())
+					{
+						rooms[i].Connection.Close();
+						rooms[i] = null;
+					}
 				}
 				Thread.Sleep(10);
 			}

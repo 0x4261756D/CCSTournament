@@ -95,8 +95,8 @@ namespace CCSTournament
 				case StocMessage.ErrorMsg:
 					OnErrorMsg(packet);
 					break;
-				case StocMessage.DuelEnd:
-					OnDuelEndMsg(packet);
+				case StocMessage.GameMsg:
+					OnGameMsg(packet);
 					break;
 				case StocMessage.Chat:
 					OnChatMsg(packet);
@@ -109,6 +109,9 @@ namespace CCSTournament
 					break;
 				case StocMessage.HsPlayerChange:
 					OnPlayerChange(packet);
+					break;
+				case StocMessage.DuelEnd:
+					Connection.Close();
 					break;
 			}
 		}
@@ -162,19 +165,20 @@ namespace CCSTournament
 
 		private void HandleChat(string message, int player)
 		{
-			if (message == "!Ready")
+			switch (message.ToLower())
 			{
-				player = sw ? player : (1 - player);
-				//lowest bit for Chat ready
-				ready[player] ^= 1;
-				if (ready[0] == 3 && ready[1] == 3)
-				{
-					StartGame();
-				}
-			}
-			else if (message == "!P1")
-			{
-				sw = player == 1;
+				case "!ready":
+					player = sw ? player : (1 - player);
+					//lowest bit for Chat ready
+					ready[player] ^= 1;
+					if (ready[0] == 3 && ready[1] == 3)
+					{
+						StartGame();
+					}
+					break;
+				case "!p1":
+					sw = player == 1;
+					break;
 			}
 		}
 
@@ -184,17 +188,17 @@ namespace CCSTournament
 			Connection.Send(packet);
 		}
 
-		private void OnDuelEndMsg(BinaryReader packet)
+		private void OnGameMsg(BinaryReader packet)
 		{
-			StocMessage id = (StocMessage)packet.ReadByte();
 			int msg = packet.ReadByte();
-			Console.WriteLine("Duel End message received with " + msg);
+			Console.WriteLine("Game Message received with " + msg);
 			if(msg == 5)
 			{
 				int winner = packet.ReadByte();
 				int reason = packet.ReadByte();
 				Console.WriteLine($"{winner}: {reason}");
 			}
+			Connection.Close();
 		}
 
 		private void OnErrorMsg(BinaryReader packet)
