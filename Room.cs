@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -38,6 +39,9 @@ namespace CCSTournament
 		public string HostInfo { get; set; } = "";
 
 		const int MAX_NOTES_LENGTH = 200;
+		private int[] ready;
+		private string[] ps;
+		private bool sw;
 
 		public enum DuelAllowedCards
 		{
@@ -54,6 +58,8 @@ namespace CCSTournament
 			notes = p1 + " vs. " + p2;
 			host_address = ip;
 			HostInfo = password;
+			ready = new int[2];
+			ps = new string[2];
 			Connection = new YGOClient();
 			Connection.Connected += OnConnected;
 			Connection.PacketReceived += OnPacketReceived;
@@ -88,6 +94,80 @@ namespace CCSTournament
 				case StocMessage.ErrorMsg:
 					OnErrorMsg(packet);
 					break;
+				case StocMessage.DuelEnd:
+					OnDuelEndMsg(packet);
+					break;
+				case StocMessage.Chat:
+					OnChatMsg(packet);
+					break;
+				case StocMessage.HsPlayerEnter:
+					OnPlayerEnter(packet);
+					break;
+				case StocMessage.HsPlayerChange:
+					OnPlayerChange(packet);
+					break;
+			}
+		}
+
+		private void OnPlayerChange(BinaryReader packet)
+		{
+			int change = packet.ReadByte();
+			int pos = (change >> 4) & 0xf;
+			pos = sw ? pos : (1 - pos);
+			int state = change & 0xf;
+			if(state == (int)PlayerChange.Ready)
+			{
+				ready[pos] |= 2;
+			}
+			else if(state == (int)PlayerChange.NotReady)
+			{
+				ready[pos] &= ~2;
+			}
+		}
+
+		private void OnPlayerEnter(BinaryReader packet)
+		{
+			string name = packet.ReadUnicode(20);
+			int pos = packet.ReadByte();
+			sw = name == ps[1 - pos];
+		}
+
+		private void OnChatMsg(BinaryReader packet)
+		{
+			int player = packet.ReadInt16();
+			string message = packet.ReadUnicode(256);
+			if(message == "!Ready")
+			{
+				player = sw ? player : (1 - player);
+				//lowest bit for Chat ready
+				ready[player] ^= 1;
+				if (ready[0] == 3 && ready[1] == 3)
+				{
+					StartGame();
+				}
+			}
+			else if(message == "!P1")
+			{
+				sw = player == 1;
+			}
+		}
+
+		private void StartGame()
+		{
+			BinaryWriter packet = GamePacketFactory.Create(CtosMessage.HsStart);
+			Connection.Send(packet);
+		}
+
+		private void OnDuelEndMsg(BinaryReader packet)
+		{
+			StocMessage id = (StocMessage)packet.ReadByte();
+			int msg = packet.ReadByte();
+			Console.WriteLine("Duel End message received with " + msg);
+			if(msg == 5)
+			{
+				int winner = packet.ReadByte();
+				int reason = packet.ReadByte();
+				Console.WriteLine($"{winner}: {reason}");
 			}
 		}
 

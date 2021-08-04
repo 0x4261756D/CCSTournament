@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace CCSTournament
 {
@@ -48,7 +49,7 @@ namespace CCSTournament
 			// Merge two adjacent groups
 		}
 
-		void SetupRound()
+		private void SetupRound()
 		{
 			numbers = new List<List<int>>();
 			for(int i = 0; i < groupSize-1; i++)
@@ -69,12 +70,12 @@ namespace CCSTournament
 			}
 		}
 
-		void Merge(int i, int j)
+		private void Merge(int i, int j)
 		{
 		}
 
 		//TODO (dummy)
-		void Matches()
+		private void Matches()
 		{
 			string s = "";
 			List<int> indices = new List<int>();
@@ -114,6 +115,7 @@ namespace CCSTournament
 				{
 					if (!rooms[i].Process()) rooms.RemoveAt(i);
 				}
+				Thread.Sleep(10);
 			}
 		}
 
