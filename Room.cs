@@ -40,7 +40,7 @@ namespace CCSTournament
 
 		const int MAX_NOTES_LENGTH = 200;
 		private int[] ready;
-		private string[] ps;
+		private string[] ps, names;
 		private bool sw;
 
 		public enum DuelAllowedCards
@@ -60,6 +60,7 @@ namespace CCSTournament
 			HostInfo = password;
 			ready = new int[2];
 			ps = new string[2];
+			names = new string[2];
 			Connection = new YGOClient();
 			Connection.Connected += OnConnected;
 			Connection.PacketReceived += OnPacketReceived;
@@ -100,6 +101,9 @@ namespace CCSTournament
 				case StocMessage.Chat:
 					OnChatMsg(packet);
 					break;
+				case StocMessage.Chat_2:
+					OnChat2Msg(packet);
+					break;
 				case StocMessage.HsPlayerEnter:
 					OnPlayerEnter(packet);
 					break;
@@ -108,6 +112,7 @@ namespace CCSTournament
 					break;
 			}
 		}
+
 
 		private void OnPlayerChange(BinaryReader packet)
 		{
@@ -118,17 +123,21 @@ namespace CCSTournament
 			if(state == (int)PlayerChange.Ready)
 			{
 				ready[pos] |= 2;
+				if (ready[0] == 3 && ready[1] == 3)
+					StartGame();
 			}
 			else if(state == (int)PlayerChange.NotReady)
 			{
 				ready[pos] &= ~2;
 			}
+			
 		}
 
 		private void OnPlayerEnter(BinaryReader packet)
 		{
 			string name = packet.ReadUnicode(20);
 			int pos = packet.ReadByte();
+			names[pos] = name;
 			sw = name == ps[1 - pos];
 		}
 
@@ -136,7 +145,24 @@ namespace CCSTournament
 		{
 			int player = packet.ReadInt16();
 			string message = packet.ReadUnicode(256);
-			if(message == "!Ready")
+			HandleChat(message, player);
+		}
+
+		private void OnChat2Msg(BinaryReader packet)
+		{
+			int playerType = packet.ReadByte();
+			if(playerType == 0)
+			{
+				int isTeam = packet.ReadByte();
+				string name = packet.ReadUnicode(20);
+				string message = packet.ReadUnicode(256);
+				HandleChat(message, Array.IndexOf(names, name));
+			}
+		}
+
+		private void HandleChat(string message, int player)
+		{
+			if (message == "!Ready")
 			{
 				player = sw ? player : (1 - player);
 				//lowest bit for Chat ready
@@ -146,7 +172,7 @@ namespace CCSTournament
 					StartGame();
 				}
 			}
-			else if(message == "!P1")
+			else if (message == "!P1")
 			{
 				sw = player == 1;
 			}
