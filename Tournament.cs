@@ -111,15 +111,17 @@ namespace CCSTournament
 			}
 			while(rooms.Count > 0)
 			{
+				var now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 				for(int i = 0; i < rooms.Count; i++)
 				{
 					if (!rooms[i].Process())
 					{
 						rooms[i].Connection.Close();
-						rooms[i] = null;
+						//rooms[i] = null;
+						rooms.RemoveAt(i);
 					}
 				}
-				Thread.Sleep(10);
+				Thread.Sleep(Math.Max(30 - (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond - now), 1));
 			}
 		}
 

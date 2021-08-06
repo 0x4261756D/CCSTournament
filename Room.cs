@@ -64,6 +64,7 @@ namespace CCSTournament
 			Connection = new YGOClient();
 			Connection.Connected += OnConnected;
 			Connection.PacketReceived += OnPacketReceived;
+			Connection.Disconnected += OnDisconnected;
 			IPAddress address;
 			try
 			{
@@ -77,12 +78,18 @@ namespace CCSTournament
 			Connection.Connect(address, host_port);
 		}
 
+		private void OnDisconnected(Exception obj)
+		{
+			Console.WriteLine($"{notes} was disconnected. Reason: {obj}");
+		}
+
 		public bool Process()
 		{
 			if (Connection.IsConnected)
 			{
 				Connection.Update();
 			}
+			//Console.WriteLine(notes + ": " + Connection.IsConnected);
 			return Connection.IsConnected;
 		}
 
@@ -110,12 +117,11 @@ namespace CCSTournament
 				case StocMessage.HsPlayerChange:
 					OnPlayerChange(packet);
 					break;
-				case StocMessage.DuelEnd:
+				case StocMessage.LeaveGame:
 					Connection.Close();
 					break;
 			}
 		}
-
 
 		private void OnPlayerChange(BinaryReader packet)
 		{
@@ -198,7 +204,6 @@ namespace CCSTournament
 				int reason = packet.ReadByte();
 				Console.WriteLine($"{winner}: {reason}");
 			}
-			Connection.Close();
 		}
 
 		private void OnErrorMsg(BinaryReader packet)
