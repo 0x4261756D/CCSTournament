@@ -39,8 +39,8 @@ namespace CCSTournament
 		public string HostInfo { get; set; } = "";
 
 		const int MAX_NOTES_LENGTH = 200;
-		private int[] ready;
-		private string[] ps, names;
+		private int[] ready = new int[2], scores = new int[2];
+		public string[] ps, names = new string[2];
 		private bool sw;
 
 		public enum DuelAllowedCards
@@ -56,11 +56,9 @@ namespace CCSTournament
 		{
 			banlistHash = Banlist.ParseForBanlists(banlistPath, banlistName);
 			notes = p1 + " vs. " + p2;
+			ps = new string[] { p1, p2 };
 			host_address = ip;
 			HostInfo = password;
-			ready = new int[2];
-			ps = new string[2];
-			names = new string[2];
 			Connection = new YGOClient();
 			Connection.Connected += OnConnected;
 			Connection.PacketReceived += OnPacketReceived;
@@ -83,13 +81,16 @@ namespace CCSTournament
 			Console.WriteLine($"{notes} was disconnected. Reason: {obj}");
 		}
 
-		public bool Process()
+		public bool Process(out int[] results)
 		{
 			if (Connection.IsConnected)
 			{
 				Connection.Update();
 			}
-			//Console.WriteLine(notes + ": " + Connection.IsConnected);
+			if (!Connection.IsConnected)
+				results = scores;
+			else
+				results = null;
 			return Connection.IsConnected;
 		}
 
@@ -202,7 +203,7 @@ namespace CCSTournament
 			{
 				int winner = packet.ReadByte();
 				int reason = packet.ReadByte();
-				Console.WriteLine($"{winner}: {reason}");
+				scores[sw ? (1 - winner) : winner]++;
 			}
 		}
 

@@ -18,6 +18,7 @@ namespace CCSTournament
 			for(int i = 0; i < 7; i++)
 			{
 				t.ProcessRound();
+				Console.WriteLine(t);
 			}
 		}
 	}

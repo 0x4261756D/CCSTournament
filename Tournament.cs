@@ -114,10 +114,21 @@ namespace CCSTournament
 				var now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 				for(int i = 0; i < rooms.Count; i++)
 				{
-					if (!rooms[i].Process())
+					int[] scores = new int[2];
+					if (!rooms[i].Process(out scores))
 					{
+						for(int j = 0; j < scores.Length; j++)
+						{
+							int index = Array.IndexOf(participants, rooms[i].ps[j]);
+							for(int k = 0; k < groups.Count; k++)
+							{
+								if (groups[k].ContainsKey(index))
+								{
+									groups[k][index] += scores[j];
+								}
+							}
+						}
 						rooms[i].Connection.Close();
-						//rooms[i] = null;
 						rooms.RemoveAt(i);
 					}
 				}
