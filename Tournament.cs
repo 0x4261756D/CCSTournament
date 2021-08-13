@@ -95,8 +95,8 @@ namespace CCSTournament
 					//HACK HACK HACK HACK
 					if (sort)
 					{
-						rooms.Add(new Room(participants[groups[i].OrderByDescending(x => x.Value).ElementAt((indices == null) ? indices[j] : j).Key],
-										participants[groups[i].OrderByDescending(x => x.Value).ElementAt((indices == null) ? indices[j + 1] : j + 1).Key], ip, bestOf: 3));
+						rooms.Add(new Room(participants[groups[i].OrderByDescending(x => x.Value).ElementAt((indices != null) ? indices[j] : j).Key],
+										participants[groups[i].OrderByDescending(x => x.Value).ElementAt((indices != null) ? indices[j + 1] : j + 1).Key], ip, bestOf: 3));
 
 					}
 					else

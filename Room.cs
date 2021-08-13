@@ -159,7 +159,7 @@ namespace CCSTournament
 			{
 				ready[pos] &= ~2;
 			}
-			SendReadyStatus();
+			//SendReadyStatus();
 		}
 
 		private void SendReadyStatus()
@@ -244,6 +244,9 @@ namespace CCSTournament
 				case "!switch":
 					sw = !sw;
 					SendChat("switching is now " + (sw ? "en" : "dis") + "abled");
+					break;
+				case "!status":
+					SendReadyStatus();
 					break;
 			}
 		}
