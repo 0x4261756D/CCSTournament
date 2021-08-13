@@ -14,12 +14,13 @@ namespace CCSTournament
 		readonly int groupSize;
 
 		List<List<int>> numbers;
-		public string ip;
+		public string ip, dashboard;
 
-		public Tournament(string[] participants, int initialGroupSize = 4, string ip = "127.0.0.1")
+		public Tournament(string[] participants, int initialGroupSize = 4, string ip = "127.0.0.1", string dashboard = "127.0.0.1")
 		{
 			this.participants = participants;
 			this.ip = ip;
+			this.dashboard = dashboard;
 			groupSize = initialGroupSize;
 			groups = new List<Dictionary<int, int>>();
 			for(int i = 0; i < Math.Ceiling((double)participants.Length / groupSize); i++)
@@ -129,6 +130,7 @@ namespace CCSTournament
 						}
 						rooms[i].Connection.Close();
 						rooms.RemoveAt(i);
+						//TODO send post request to glitch to update the groups
 					}
 				}
 				Thread.Sleep(Math.Max(30 - (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond - now), 1));

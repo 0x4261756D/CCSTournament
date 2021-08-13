@@ -5,3 +5,4 @@ YGOSharp.Network
 *.user
 mono_crash*
 test.json
+.glitch_secret.txt

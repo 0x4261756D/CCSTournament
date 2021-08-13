@@ -14,11 +14,14 @@ namespace CCSTournament
 		public static void Main(string[] args)
 		{
 			string[] participants = null;
+			string serverIp = "localhost", dashboardUrl = "localhost";
 			foreach(string arg in args)
 			{
 				if(arg == "help")
 				{
-					Console.WriteLine("Parameter syntax: parameter name=parameter value\nAvailable parameters: banlistPath, banlistName, participants (either json or txt file)\nparticipants format: json: single array named participants containing the names; txt: One name per line");
+					Console.WriteLine("Parameter syntax: parameter name=parameter value\n" +
+						"Available parameters: banlistPath, banlistName, serverIp, dashboardUrl, participants (either json or txt file)\n" +
+						"participants format: json: single array named participants containing the names; txt: One name per line");
 					return;
 				}
 				string[] kv = arg.Split('=');
@@ -42,6 +45,12 @@ namespace CCSTournament
 							participants = File.ReadAllLines(kv[1]);
 						}
 						break;
+					case "serverIp":
+						serverIp = kv[1];
+						break;
+					case "dashboardUrl":
+						dashboardUrl = kv[1];
+						break;
 				}
 			}
 			if(participants == null)
@@ -49,7 +58,7 @@ namespace CCSTournament
 				Console.WriteLine("no participants list supplied");
 				return;
 			}
-			Tournament t = new Tournament(participants, 4, "85.214.233.223");
+			Tournament t = new Tournament(participants, 4, serverIp, dashboardUrl);
 			do
 			{
 				Console.WriteLine(t);
