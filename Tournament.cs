@@ -74,7 +74,6 @@ namespace CCSTournament
 		{
 		}
 
-		//TODO (dummy)
 		private void Matches()
 		{
 			string s = "";
@@ -106,7 +105,7 @@ namespace CCSTournament
 			{
 				for(int j = 0; j < groups[i].Count - 1; j += 2)
 				{
-					rooms.Add(new Room(participants[groups[i].ElementAt(j).Key], participants[groups[i].ElementAt(j + 1).Key], ip));
+					rooms.Add(new Room(participants[groups[i].ElementAt(j).Key], participants[groups[i].ElementAt(j + 1).Key], ip, bestOf: 3));
 				}
 			}
 			while(rooms.Count > 0)

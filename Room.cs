@@ -13,6 +13,7 @@ namespace CCSTournament
 {
 	public class Room
 	{
+		#region variables
 		public YGOClient Connection { get; set; }
 		public static uint banlistHash { get; set; } = 0;
 		public static string banlistPath { get; set; } = "";
@@ -27,7 +28,7 @@ namespace CCSTournament
 		public ulong duelFlags { get; set; } = 190464;
 		public int t0Count { get; set; } = 1;
 		public int t1Count { get; set; } = 1;
-		public int bestOf { get; set; } = 1;
+		public int bestOf { get; set; }
 		public int forb { get; set; } = 0;
 		public ushort extraRules { get; set; } = 0;
 		public string notes { get; set; } = "";
@@ -55,6 +56,8 @@ namespace CCSTournament
 		public string[] ps, names = new string[2];
 		private bool sw;
 
+		#endregion variables
+
 		public enum DuelAllowedCards
 		{
 			OCG_ONLY,
@@ -64,9 +67,10 @@ namespace CCSTournament
 			ANY
 		}
 
-		public Room(string p1 = "", string p2 = "", string ip = "127.0.0.1", string password = "")
+		public Room(string p1 = "", string p2 = "", string ip = "127.0.0.1", string password = "", int bestOf = 1)
 		{
 			banlistHash = Banlist.ParseForBanlists(banlistPath, banlistName);
+			this.bestOf = bestOf;
 			notes = p1 + " vs. " + p2;
 			ps = new string[] { p1, p2 };
 			host_address = ip;
@@ -109,7 +113,6 @@ namespace CCSTournament
 		private void OnPacketReceived(BinaryReader packet)
 		{
 			StocMessage id = (StocMessage)packet.ReadByte();
-			Console.WriteLine("StoC Message: " + id.ToString());
 			switch (id)
 			{
 				case StocMessage.ErrorMsg:
@@ -130,8 +133,12 @@ namespace CCSTournament
 				case StocMessage.HsPlayerChange:
 					OnPlayerChange(packet);
 					break;
-				case StocMessage.LeaveGame:
+				case StocMessage.DuelEnd:
+					Console.WriteLine("Received LeaveGame");
 					Connection.Close();
+					break;
+				default:
+					Console.WriteLine("Unhandled StoC Message: " + id.ToString());
 					break;
 			}
 		}
@@ -152,6 +159,30 @@ namespace CCSTournament
 			{
 				ready[pos] &= ~2;
 			}
+			SendReadyStatus();
+		}
+
+		private void SendReadyStatus()
+		{
+			for(int i = 0; i < ready.Length; i++)
+			{
+				int index = sw ? (1 - i) : i;
+				if(ready[index] == 3)
+				{
+					SendChat($"{ps[index]}, {names[index]} is ready");
+				}
+				else
+				{
+					if ((ready[index] & 1) == 0)
+					{
+						SendChat($"{ps[index]}, {names[index]} still needs to type !ready");
+					}
+					if ((ready[index] & 2) == 0)
+					{
+						SendChat($"{ps[index]}, {names[index]} still needs to confirm his deck");
+					}
+				}
+			}
 		}
 
 		private void OnPlayerEnter(BinaryReader packet)
@@ -165,8 +196,9 @@ namespace CCSTournament
 			}
 			else if(!sw)
 			{
-				SendChat($"{name}, your name was not recognised. Please type !P1 or !P2 depending if you are player one or two");
+				SendChat($"{name}, your name was not recognised. Please type !switch if you are not {ps[pos]}");
 			}
+			SendChat("Because of limitations inside EDOPro every player has to type !ready in chat");
 		}
 
 		private void SendChat(string message)
@@ -209,17 +241,22 @@ namespace CCSTournament
 						StartGame();
 					}
 					break;
-				case "!p1":
-					sw = player == 1;
-					break;
-				case "!p2":
-					sw = player == 0;
+				case "!switch":
+					sw = !sw;
+					SendChat("switching is now " + (sw ? "en" : "dis") + "abled");
 					break;
 			}
 		}
 
 		private void StartGame()
 		{
+			SendChat("Game starts now, players:");
+			for(int i = 0; i < ps.Length; i++)
+			{
+				int index = sw ? (1 - i) : i;
+				SendChat($"{index}: {ps[index]}: {names[index]}");
+			}
+			//SendChat("Switching: " + sw);
 			BinaryWriter packet = GamePacketFactory.Create(CtosMessage.HsStart);
 			Connection.Send(packet);
 		}
@@ -227,7 +264,6 @@ namespace CCSTournament
 		private void OnGameMsg(BinaryReader packet)
 		{
 			int msg = packet.ReadByte();
-			Console.WriteLine("Game Message received with " + msg);
 			if(msg == 5)
 			{
 				int winner = packet.ReadByte();
