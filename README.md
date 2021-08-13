@@ -1,7 +1,7 @@
-# Tool to create an "empty" room on an EDOPro server.
+# Wants to be a semi-automatic tournament administration tool for EDOPro someday
 
-Remotely create rooms on an EDOPro server. Much amazing, such Wow
+**Requires YGOSharp.Network used in the [Windbot](https://github.com/ProjectIgnis/windbot) project, I could not find it as a standalone project**
 
-**Requires YGOSharp.Network used in the [Windbot](https://github.com/ProjectIgnis/windbot) project**
+Divides participants into groups, creates rooms for Round-Robin pairings and collects results, then merges two groups together.
 
-If needed the past to the banlist file has to be hardcoded or passed as argument
+If needed the path to the banlist file has to be hardcoded in or passed as a commandline-argument
