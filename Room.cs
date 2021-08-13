@@ -32,8 +32,20 @@ namespace CCSTournament
 		public ushort extraRules { get; set; } = 0;
 		public string notes { get; set; } = "";
 		public int Version { get; set; } = 39 | 1 << 8 | 9 << 16;
-
-		public string host_address;
+		private string[] officialServers = { "185.227.110.90", "146.71.79.166" };
+		private string address;
+		public string host_address 
+		{
+			get
+			{
+				return address;
+			}
+			set 
+			{
+				if (!officialServers.Contains(value))
+					address = value;
+			} 
+		}
 		public int host_port = 7911;
 		public string Username { get; set; } = "Tournament";
 		public string HostInfo { get; set; } = "";
