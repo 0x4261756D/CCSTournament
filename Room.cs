@@ -33,17 +33,17 @@ namespace CCSTournament
 		public string notes { get; set; } = "";
 		public int Version { get; set; } = 39 | 1 << 8 | 9 << 16;
 		private string[] officialServers = { "185.227.110.90", "146.71.79.166" };
-		private string address;
+		private string _address;
 		public string host_address 
 		{
 			get
 			{
-				return address;
+				return _address;
 			}
 			set 
 			{
 				if (!officialServers.Contains(value))
-					address = value;
+					_address = value;
 			} 
 		}
 		public int host_port = 7911;
@@ -152,7 +152,6 @@ namespace CCSTournament
 			{
 				ready[pos] &= ~2;
 			}
-			
 		}
 
 		private void OnPlayerEnter(BinaryReader packet)
@@ -160,7 +159,22 @@ namespace CCSTournament
 			string name = packet.ReadUnicode(20);
 			int pos = packet.ReadByte();
 			names[pos] = name;
-			sw = name == ps[1 - pos];
+			if (ps.Contains(name))
+			{
+				sw = name == ps[1 - pos];
+			}
+			else if(!sw)
+			{
+				SendChat($"{name}, your name was not recognised. Please type !P1 or !P2 depending if you are player one or two");
+			}
+		}
+
+		private void SendChat(string message)
+		{
+			byte[] content = Encoding.Unicode.GetBytes(message + '\0');
+			BinaryWriter chat = GamePacketFactory.Create(CtosMessage.Chat);
+			chat.Write(content);
+			Connection.Send(chat);
 		}
 
 		private void OnChatMsg(BinaryReader packet)
@@ -197,6 +211,9 @@ namespace CCSTournament
 					break;
 				case "!p1":
 					sw = player == 1;
+					break;
+				case "!p2":
+					sw = player == 0;
 					break;
 			}
 		}
