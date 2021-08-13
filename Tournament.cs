@@ -32,14 +32,15 @@ namespace CCSTournament
 					groups[i].Add(i * groupSize + j, 0);
 				}
 			}
-			SetupRound();
+			//SetupRound();
 		}
 
-		public void ProcessRound()
+		public bool ProcessRound()
 		{
 			// Check if the tournament is already done
 			if (groups.Count <= 1)
-				return;
+				return false;
+			SetupRound();
 			// Do the matches
 			while (Matches()) { }
 			// Sort the groups
@@ -53,6 +54,7 @@ namespace CCSTournament
 				Merge(i, i + 1);
 			}
 			HandleRooms(sort: true);
+			return true;
 		}
 
 		private void SetupRound()
@@ -162,8 +164,6 @@ namespace CCSTournament
 			HandleRooms(indices);
 			return true;
 		}
-
-
 
 		public override string ToString()
 		{

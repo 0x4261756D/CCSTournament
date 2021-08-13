@@ -4,3 +4,4 @@ YGOSharp.Network
 .vs/
 *.user
 mono_crash*
+test.json
