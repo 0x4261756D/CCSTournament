@@ -54,14 +54,16 @@ namespace CCSTournament
 			// Sort the groups
 			groups.Sort((a, b) => a.Count.CompareTo(b.Count));
 			// Special case if number of groups is odd
-			Merge(0, 1);
+			if((groups.Count & 1) != 0)
+				Merge(0, 1);
 			// Merge two adjacent groups
-			int merges = groups.Count / 2;
+			int merges = groups.Count / 2 - 1;
+			HandleRooms(merge: true);
 			for (int i = 0; i < merges; i++)
 			{
 				Merge(i, i + 1);
+
 			}
-			HandleRooms(sort: true);
 			return true;
 		}
 
@@ -95,24 +97,43 @@ namespace CCSTournament
 			groups.RemoveAt(j);
 		}
 
-		private void HandleRooms(List<int> indices = null, bool sort = false)
+		private void HandleRooms(List<int> indices = null, bool merge = false)
 		{
 			List<Room> rooms = new List<Room>();
-			for (int i = 0; i < groups.Count; i++)
+			//HACK HACK HACK HACK
+			if (merge)
 			{
-				for (int j = 0; j < groups[i].Count - 1; j += 2)
+				for(int i = 0; i < groups.Count - 1; i += 2)
 				{
-					//HACK HACK HACK HACK
-					if (sort)
+					for(int j = 0; j < groups[i].Count - 1; j++)
 					{
+						// Handle unusually small group size
+						if (indices[j] > groups[i].Count) continue; 
 						rooms.Add(new Room(participants[groups[i].OrderByDescending(x => x.Value).ElementAt((indices != null) ? indices[j] : j).Key],
-										participants[groups[i].OrderByDescending(x => x.Value).ElementAt((indices != null) ? indices[j + 1] : j + 1).Key], ip, bestOf: 3));
-
+										participants[groups[i + 1].OrderByDescending(x => x.Value).ElementAt((indices != null) ? indices[j] : j).Key], ip, bestOf: 3));
 					}
-					else
+					// Handle odd group size
+					if ((groups[i].Count & 1) != 0)
 					{
+						groups[i][groups[i].Count - 1] += 1;
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0; i < groups.Count; i++)
+				{
+					for (int j = 0; j < groups[i].Count - 1; j += 2)
+					{
+						// Handle unusually small group size
+						if (indices[j] > groups[i].Count) continue;
 						rooms.Add(new Room(participants[groups[i].ElementAt((indices == null) ? indices[j] : j).Key],
 										participants[groups[i].ElementAt((indices == null) ? indices[j + 1] : j + 1).Key], ip, bestOf: 3));
+					}
+					// Handle odd group size
+					if((groups[i].Count & 1) != 0)
+					{
+						groups[i][groups[i].Count - 1] += 1;
 					}
 				}
 			}
