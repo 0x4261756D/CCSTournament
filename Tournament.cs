@@ -43,7 +43,11 @@ namespace CCSTournament
 				return false;
 			SetupRound();
 			// Do the matches
-			while (Matches()) { }
+			while (Matches()) 
+			{
+				Console.WriteLine("Press any key to initiate the next matches");
+				Console.ReadKey();
+			}
 			// Sort the groups
 			groups.Sort((a, b) => a.Count.CompareTo(b.Count));
 			// Special case if number of groups is odd

@@ -62,6 +62,8 @@ namespace CCSTournament
 			do
 			{
 				Console.WriteLine(t);
+				Console.WriteLine("Press any key to initiate the next round");
+				Console.ReadKey();
 			}
 			while (t.ProcessRound());
 		}
