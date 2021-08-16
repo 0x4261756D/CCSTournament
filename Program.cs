@@ -15,15 +15,20 @@ namespace CCSTournament
 		{
 			string[] participants = null;
 			string serverIp = "localhost", dashboardUrl = "localhost", dashboardToken = "";
+			int mergeRounds = 1;
+			bool fullRR = false;
 			foreach(string arg in args)
 			{
 				if(arg == "help")
 				{
 					Console.WriteLine("Parameter syntax: parameter name=parameter value\n" +
-						"Available parameters: banlistPath, banlistName, serverIp, dashboardUrl, dashboardToken (either directly or as first line of text file), participants (either json or txt file)\n" +
-						"participants format: json: single array named participants containing the names; txt: One name per line");
+						"Available parameters: mergeRounds, banlistPath, banlistName, serverIp, dashboardUrl, " +
+						"dashboardToken (either directly or as first line of text file), participants (either json or txt file)\n" +
+						"participants format: json: single array named participants containing the names; txt: One name per line\n" +
+						"If you want to play full Round Robin each round add fullRR as parameter (without '=')");
 					return;
 				}
+				fullRR |= arg == "fullRR";
 				string[] kv = arg.Split('=');
 				if (kv.Length != 2) continue;
 				switch (kv[0])
@@ -54,6 +59,9 @@ namespace CCSTournament
 					case "dashboardToken":
 						dashboardToken = File.Exists(kv[1]) ? File.ReadAllLines(kv[1])[0] : kv[1];
 						break;
+					case "mergeRounds":
+						mergeRounds = Convert.ToInt32(kv[1]);
+						break;
 				}
 			}
 			if(participants == null)
@@ -61,14 +69,26 @@ namespace CCSTournament
 				Console.WriteLine("no participants list supplied");
 				return;
 			}
-			Tournament t = new Tournament(participants, 4, serverIp, dashboardUrl, dashboardToken);
-			do
+			Tournament t = new Tournament(participants, 4, serverIp, dashboardUrl, dashboardToken, mergeRounds);
+			WaitAndNotify("Press any key to start the tournament");
+			t.RoundRobinPhase();
+			WaitAndNotify("Press any key to start the merging phase");
+			while (t.MergingPhase())
 			{
 				Console.WriteLine(t);
-				Console.WriteLine("Press any key to initiate the next round");
-				Console.ReadKey(true);
+				if (fullRR)
+				{
+					Console.WriteLine("Now doing Round Robin");
+					t.RoundRobinPhase();
+				}
+				WaitAndNotify("Press any key to start the next merging phase");
 			}
-			while (t.ProcessRound());
+		}
+
+		public static void WaitAndNotify(string s)
+		{
+			Console.WriteLine();
+			Console.ReadKey(true);
 		}
 	}
 }

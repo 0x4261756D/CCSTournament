@@ -10,21 +10,23 @@ namespace CCSTournament
 {
 	public class Tournament
 	{
-		string[] participants;
+		readonly string[] participants;
 
 		List<Dictionary<int, int>> groups;
-		readonly int groupSize;
+		int groupSize;
 
 		List<List<int>> numbers;
 		public string ip, dashboard;
 		private string dashboardToken;
+		public int mergeRounds;
 
-		public Tournament(string[] participants, int initialGroupSize = 4, string ip = "127.0.0.1", string dashboard = "127.0.0.1", string dashboardToken = "")
+		public Tournament(string[] participants, int initialGroupSize, string ip, string dashboard, string dashboardToken, int mergeRounds)
 		{
 			this.participants = participants;
 			this.ip = ip;
 			this.dashboard = dashboard;
 			this.dashboardToken = dashboardToken;
+			this.mergeRounds = mergeRounds;
 			groupSize = initialGroupSize;
 			groups = new List<Dictionary<int, int>>();
 			for (int i = 0; i < Math.Ceiling((double)participants.Length / groupSize); i++)
@@ -41,21 +43,18 @@ namespace CCSTournament
 
 		public void RoundRobinPhase()
 		{
-			ProcessRound(true);
+			SetupRound();
+			// Do the matches
+			while (Matches())
+			{
+				MainClass.WaitAndNotify("Press any key to initiate the next matches");
+			}
 		}
-
-		public bool ProcessRound(bool rr = false)
+		public bool MergingPhase()
 		{
 			// Check if the tournament is already done
 			if (groups.Count <= 1)
 				return false;
-			SetupRound();
-			// Do the matches
-			while (Matches(rr))
-			{
-				Console.WriteLine("Press any key to initiate the next matches");
-				Console.ReadKey(true);
-			}
 			// Sort the groups
 			groups.Sort((a, b) => a.Count.CompareTo(b.Count));
 			// Special case if number of groups is odd
@@ -67,8 +66,8 @@ namespace CCSTournament
 			for (int i = 0; i < merges; i++)
 			{
 				Merge(i, i + 1);
-
 			}
+			groupSize *= 2;
 			return true;
 		}
 
@@ -93,7 +92,7 @@ namespace CCSTournament
 			}
 		}
 
-		private bool Matches(bool rr)
+		private bool Matches()
 		{
 			string s = "";
 			List<int> indices = new List<int>();
