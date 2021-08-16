@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -159,7 +158,6 @@ namespace CCSTournament
 			{
 				ready[pos] &= ~2;
 			}
-			//SendReadyStatus();
 		}
 
 		private void SendReadyStatus()
@@ -259,7 +257,6 @@ namespace CCSTournament
 				int index = sw ? (1 - i) : i;
 				SendChat($"{index}: {ps[index]}: {names[index]}");
 			}
-			//SendChat("Switching: " + sw);
 			BinaryWriter packet = GamePacketFactory.Create(CtosMessage.HsStart);
 			Connection.Send(packet);
 		}
