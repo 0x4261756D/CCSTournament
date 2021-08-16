@@ -39,14 +39,19 @@ namespace CCSTournament
 			}
 		}
 
-		public bool ProcessRound()
+		public void RoundRobinPhase()
+		{
+			ProcessRound(true);
+		}
+
+		public bool ProcessRound(bool rr = false)
 		{
 			// Check if the tournament is already done
 			if (groups.Count <= 1)
 				return false;
 			SetupRound();
 			// Do the matches
-			while (Matches())
+			while (Matches(rr))
 			{
 				Console.WriteLine("Press any key to initiate the next matches");
 				Console.ReadKey(true);
@@ -86,6 +91,36 @@ namespace CCSTournament
 				}
 				Console.WriteLine();
 			}
+		}
+
+		private bool Matches(bool rr)
+		{
+			string s = "";
+			List<int> indices = new List<int>();
+			for (int i = 0; i < numbers.Count; i++)
+			{
+				if (s.Contains(i.ToString()))
+					continue;
+				int j = 0;
+				while (s.Contains(numbers[i][j].ToString()))
+				{
+					j++;
+				}
+				s += i.ToString() + numbers[i][j];
+				numbers[i].RemoveAt(j);
+				if (numbers[i].Count == 0)
+				{
+					indices.Add(i);
+				}
+			}
+			indices.Sort((a, b) => -a.CompareTo(b));
+			foreach (int i in indices)
+			{
+				numbers.RemoveAt(i);
+			}
+			if (s == "") return false;
+			HandleRooms(s.ToList().ConvertAll(x => Convert.ToInt32(x.ToString())));
+			return true;
 		}
 
 		private void Merge(int i, int j)
@@ -158,7 +193,6 @@ namespace CCSTournament
 						}
 						rooms[i].Connection.Close();
 						rooms.RemoveAt(i);
-						//TODO send post request to glitch to update the groups
 						string s = JsonConvert.SerializeObject(CreateJsonRepresentation());
 						using (var httpClient = new HttpClient())
 						{
@@ -179,6 +213,22 @@ namespace CCSTournament
 			}
 		}
 
+		public override string ToString()
+		{
+			string s = "";
+			foreach (Dictionary<int, int> g in groups)
+			{
+				s += "GROUP starts\n";
+				foreach (KeyValuePair<int, int> player in g.OrderByDescending(x => x.Value))
+				{
+					s += $"{participants[player.Key]}: {player.Value}\n";
+				}
+				s += "GROUP ends\n";
+			}
+			return s;
+		}
+
+		#region JSON creation stuff
 		private payload CreateJsonRepresentation()
 		{
 			// HACK Please don't tell anybody of the crimes I commited in here
@@ -203,51 +253,6 @@ namespace CCSTournament
 			};
 		}
 
-		private bool Matches()
-		{
-			string s = "";
-			List<int> indices = new List<int>();
-			for (int i = 0; i < numbers.Count; i++)
-			{
-				if (s.Contains(i.ToString()))
-					continue;
-				int j = 0;
-				while (s.Contains(numbers[i][j].ToString()))
-				{
-					j++;
-				}
-				s += i.ToString() + numbers[i][j];
-				numbers[i].RemoveAt(j);
-				if (numbers[i].Count == 0)
-				{
-					indices.Add(i);
-				}
-			}
-			indices.Sort((a, b) => -a.CompareTo(b));
-			foreach (int i in indices)
-			{
-				numbers.RemoveAt(i);
-			}
-			if (s == "") return false;
-			HandleRooms(indices);
-			return true;
-		}
-
-		public override string ToString()
-		{
-			string s = "";
-			foreach (Dictionary<int, int> g in groups)
-			{
-				s += "GROUP starts\n";
-				foreach (KeyValuePair<int, int> player in g.OrderByDescending(x => x.Value))
-				{
-					s += $"{participants[player.Key]}: {player.Value}\n";
-				}
-				s += "GROUP ends\n";
-			}
-			return s;
-		}
-
 		private struct payload
 		{
 			public tournament tournament;
@@ -269,5 +274,6 @@ namespace CCSTournament
 			public string name;
 			public int score;
 		}
+		#endregion JSON creation stuff
 	}
 }
