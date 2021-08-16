@@ -20,7 +20,7 @@ namespace CCSTournament
 				if(arg == "help")
 				{
 					Console.WriteLine("Parameter syntax: parameter name=parameter value\n" +
-						"Available parameters: banlistPath, banlistName, serverIp, dashboardUrl, participants (either json or txt file)\n" +
+						"Available parameters: banlistPath, banlistName, serverIp, dashboardUrl, dashboardToken (either directly or as first line of text file), participants (either json or txt file)\n" +
 						"participants format: json: single array named participants containing the names; txt: One name per line");
 					return;
 				}
