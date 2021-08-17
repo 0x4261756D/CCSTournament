@@ -26,6 +26,10 @@ namespace CCSTournament
 			this.ip = ip;
 			this.dashboard = dashboard;
 			this.dashboardToken = dashboardToken;
+			if(mergeRounds > initialGroupSize)
+			{
+				Console.WriteLine("too many mergeRounds");
+			}
 			this.mergeRounds = mergeRounds;
 			groupSize = initialGroupSize;
 			groups = new List<Dictionary<int, int>>();
@@ -61,8 +65,14 @@ namespace CCSTournament
 			if((groups.Count & 1) != 0)
 				Merge(0, 1);
 			// Merge two adjacent groups
+			List<int> l = new List<int>();
+			for(int i = 0; i < groupSize; i++)
+			{
+				l.Add(i);
+				l.Add(i);
+			}
+			HandleRooms(l, true);
 			int merges = groups.Count / 2 - 1;
-			HandleRooms(merge: true);
 			for (int i = 0; i < merges; i++)
 			{
 				Merge(i, i + 1);
@@ -92,7 +102,7 @@ namespace CCSTournament
 			}
 		}
 
-		private bool Matches()
+		private List<int> Permute()
 		{
 			string s = "";
 			List<int> indices = new List<int>();
@@ -117,8 +127,14 @@ namespace CCSTournament
 			{
 				numbers.RemoveAt(i);
 			}
-			if (s == "") return false;
-			HandleRooms(s.ToList().ConvertAll(x => Convert.ToInt32(x.ToString())));
+			return s.ToList().ConvertAll(x => Convert.ToInt32(x.ToString()));
+		}
+
+		private bool Matches()
+		{
+			List<int> l = Permute();
+			if (l.Count == 0) return false;
+			HandleRooms(l);
 			return true;
 		}
 
@@ -131,7 +147,7 @@ namespace CCSTournament
 			groups.RemoveAt(j);
 		}
 
-		private void HandleRooms(List<int> indices = null, bool merge = false)
+		private void HandleRooms(List<int> indices, bool merge = false)
 		{
 			List<Room> rooms = new List<Room>();
 			//HACK HACK HACK HACK
@@ -139,12 +155,12 @@ namespace CCSTournament
 			{
 				for(int i = 0; i < groups.Count - 1; i += 2)
 				{
-					for(int j = 0; j < groups[i].Count - 1; j++)
+					for(int j = 0; j < groups[i].Count - 1; j += 2)
 					{
 						// Handle unusually small group size
 						if (indices[j] > groups[i].Count) continue; 
-						rooms.Add(new Room(participants[groups[i].OrderByDescending(x => x.Value).ElementAt((indices != null) ? indices[j] : j).Key],
-										participants[groups[i + 1].OrderByDescending(x => x.Value).ElementAt((indices != null) ? indices[j] : j).Key], ip, bestOf: 3));
+						rooms.Add(new Room(participants[groups[i].OrderByDescending(x => x.Value).ElementAt(indices[j]).Key],
+										participants[groups[i + 1].OrderByDescending(x => x.Value).ElementAt(indices[j + 1]).Key], ip, bestOf: 3));
 					}
 					// Handle odd group size
 					if ((groups[i].Count & 1) != 0)
@@ -161,8 +177,8 @@ namespace CCSTournament
 					{
 						// Handle unusually small group size
 						if (indices[j] > groups[i].Count) continue;
-						rooms.Add(new Room(participants[groups[i].ElementAt((indices == null) ? indices[j] : j).Key],
-										participants[groups[i].ElementAt((indices == null) ? indices[j + 1] : j + 1).Key], ip, bestOf: 3));
+						rooms.Add(new Room(participants[groups[i].ElementAt(indices[j]).Key],
+										participants[groups[i].ElementAt(indices[j + 1]).Key], ip, bestOf: 3));
 					}
 					// Handle odd group size
 					if((groups[i].Count & 1) != 0)
