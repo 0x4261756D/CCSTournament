@@ -1,3 +1,5 @@
+**Moved to [Codeberg](https://codeberg.org/0x4261756D/CCSTournament)**
+
 # Wants to be a semi-automatic tournament administration tool for EDOPro someday
 
 **Requires YGOSharp.Network used in the [Windbot](https://github.com/ProjectIgnis/windbot) project, I could not find it as a standalone project**
